@@ -1,7 +1,7 @@
+import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
-import React, { useState } from "react";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -9,21 +9,24 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
 
   const login = async () => {
+    setError("");
     try {
       const res = await signInWithEmailAndPassword(auth, email, password);
       const uid = res.user.uid;
 
-      const adminRef = doc(db, "admins", uid);
-      const adminSnap = await getDoc(adminRef);
+      console.log("Logged in UID:", uid);
 
-      if (!adminSnap.exists()) {
-        setError("Access denied");
+      const adminDoc = await getDoc(doc(db, "admins", uid));
+
+      if (!adminDoc.exists()) {
+        setError("Not an admin user");
         return;
       }
 
       window.location.href = "/admin/dashboard";
     } catch (err) {
-      setError("Invalid login");
+      console.error(err);
+      setError("Invalid email or password");
     }
   };
 
